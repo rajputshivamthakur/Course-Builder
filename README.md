@@ -17,7 +17,7 @@ Built with **React, Vite, and CSS**, it provides an intuitive drag-and-drop inte
 
 1. **Clone the repository** (or download the source code):
    ```bash
-   git clone <https://github.com/rajputshivamthakur/Course-Builder.git>
+   git clone https://github.com/rajputshivamthakur/Course-Builder.git
    cd course-builder-app
    ```
 
