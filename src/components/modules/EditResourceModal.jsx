@@ -1,32 +1,33 @@
 import React, { useState, useEffect } from 'react';
 import { VALIDATION_MESSAGES } from '../../utils/constants';
+import { formatFileSize } from '../../utils/fileValidation';
 
-const LinkModal = ({ isOpen, onClose, onSave, moduleId }) => {
-  const [linkTitle, setLinkTitle] = useState('');
-  const [linkUrl, setLinkUrl] = useState('');
+const EditResourceModal = ({ isOpen, onClose, onSave, resource }) => {
+  const [title, setTitle] = useState('');
+  const [url, setUrl] = useState('');
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
-    if (isOpen) {
-      setLinkTitle('');
-      setLinkUrl('');
+    if (resource) {
+      setTitle(resource.title || '');
+      setUrl(resource.url || '');
       setErrors({});
     }
-  }, [isOpen]);
+  }, [resource]);
 
   const validateForm = () => {
     const newErrors = {};
 
-    if (!linkTitle.trim()) {
+    if (!title.trim()) {
       newErrors.title = VALIDATION_MESSAGES.REQUIRED_FIELD;
     }
 
-    if (!linkUrl.trim()) {
+    if (resource?.type === 'link' && !url.trim()) {
       newErrors.url = VALIDATION_MESSAGES.REQUIRED_FIELD;
-    } else {
+    } else if (resource?.type === 'link' && url.trim()) {
       const urlPattern =
         /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/;
-      if (!urlPattern.test(linkUrl.trim())) {
+      if (!urlPattern.test(url.trim())) {
         newErrors.url = VALIDATION_MESSAGES.INVALID_URL;
       }
     }
@@ -40,23 +41,23 @@ const LinkModal = ({ isOpen, onClose, onSave, moduleId }) => {
 
     if (!validateForm()) return;
 
-    const url = linkUrl.trim();
-    const finalUrl = url.startsWith('http') ? url : `https://${url}`;
+    const updatedResource = {
+      ...resource,
+      title: title.trim(),
+      ...(resource.type === 'link' && {
+        url: url.trim().startsWith('http')
+          ? url.trim()
+          : `https://${url.trim()}`,
+      }),
+    };
 
-    onSave({
-      id: Date.now().toString(),
-      moduleId,
-      type: 'link',
-      title: linkTitle.trim(),
-      url: finalUrl,
-    });
-
-    setLinkTitle('');
-    setLinkUrl('');
+    onSave(updatedResource);
+    setTitle('');
+    setUrl('');
     setErrors({});
   };
 
-  if (!isOpen) return null;
+  if (!isOpen || !resource) return null;
 
   return (
     <div
@@ -101,7 +102,7 @@ const LinkModal = ({ isOpen, onClose, onSave, moduleId }) => {
               margin: 0,
             }}
           >
-            Add Link
+            Edit {resource.type === 'link' ? 'Link' : 'File'}
           </h2>
           <button
             onClick={onClose}
@@ -130,13 +131,13 @@ const LinkModal = ({ isOpen, onClose, onSave, moduleId }) => {
                   color: '#212529',
                 }}
               >
-                Display Title *
+                Title *
               </label>
               <input
                 type="text"
-                placeholder="Enter link title"
-                value={linkTitle}
-                onChange={e => setLinkTitle(e.target.value)}
+                placeholder="Enter title"
+                value={title}
+                onChange={e => setTitle(e.target.value)}
                 style={{
                   width: '100%',
                   padding: '12px',
@@ -161,45 +162,79 @@ const LinkModal = ({ isOpen, onClose, onSave, moduleId }) => {
               )}
             </div>
 
-            <div style={{ marginBottom: '16px' }}>
-              <label
-                style={{
-                  display: 'block',
-                  marginBottom: '8px',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  color: '#212529',
-                }}
-              >
-                URL *
-              </label>
-              <input
-                type="text"
-                placeholder="Enter URL (e.g., https://example.com)"
-                value={linkUrl}
-                onChange={e => setLinkUrl(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  border: `1px solid ${errors.url ? '#dc3545' : '#ced4da'}`,
-                  borderRadius: '4px',
-                  fontSize: '14px',
-                  transition: 'border-color 0.15s ease',
-                }}
-              />
-              {errors.url && (
-                <span
+            {resource.type === 'link' && (
+              <div style={{ marginBottom: '16px' }}>
+                <label
                   style={{
-                    color: '#dc3545',
-                    fontSize: '12px',
-                    marginTop: '4px',
                     display: 'block',
+                    marginBottom: '8px',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    color: '#212529',
                   }}
                 >
-                  {errors.url}
-                </span>
-              )}
-            </div>
+                  URL *
+                </label>
+                <input
+                  type="text"
+                  placeholder="Enter URL"
+                  value={url}
+                  onChange={e => setUrl(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    border: `1px solid ${errors.url ? '#dc3545' : '#ced4da'}`,
+                    borderRadius: '4px',
+                    fontSize: '14px',
+                    transition: 'border-color 0.15s ease',
+                  }}
+                />
+                {errors.url && (
+                  <span
+                    style={{
+                      color: '#dc3545',
+                      fontSize: '12px',
+                      marginTop: '4px',
+                      display: 'block',
+                    }}
+                  >
+                    {errors.url}
+                  </span>
+                )}
+              </div>
+            )}
+
+            {resource.type === 'file' && (
+              <div>
+                <label
+                  style={{
+                    display: 'block',
+                    marginBottom: '8px',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    color: '#212529',
+                  }}
+                >
+                  File
+                </label>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '8px 12px',
+                    backgroundColor: '#f8f9fa',
+                    borderRadius: '4px',
+                    fontSize: '14px',
+                  }}
+                >
+                  <span>{resource.fileName}</span>
+                  <span style={{ color: '#6c757d' }}>
+                    ({formatFileSize(resource.fileSize)})
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
 
           <div
@@ -240,7 +275,7 @@ const LinkModal = ({ isOpen, onClose, onSave, moduleId }) => {
                 cursor: 'pointer',
               }}
             >
-              Add Link
+              Save Changes
             </button>
           </div>
         </form>
@@ -249,4 +284,4 @@ const LinkModal = ({ isOpen, onClose, onSave, moduleId }) => {
   );
 };
 
-export default LinkModal;
+export default EditResourceModal;

@@ -1,16 +1,49 @@
+import React from 'react';
+
 const EmptyState = () => {
   return (
-    <div className="empty-state">
-      <div className="empty-state-illustration">
-        <img
-          src="/##.svg"
-          alt="Empty illustration"
-          className="empty-state-image"
-        />
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '400px',
+        padding: '40px',
+        textAlign: 'center',
+      }}
+    >
+      <div
+        style={{
+          marginBottom: '24px',
+          fontSize: '64px',
+          opacity: 0.3,
+        }}
+      >
+        📚
       </div>
-      <h2 className="empty-state-title">Nothing added here yet</h2>
-      <p className="empty-state-description">
-        Click on the [+] Add button to add items to this course
+
+      <h2
+        style={{
+          fontSize: '18px',
+          fontWeight: '600',
+          marginBottom: '8px',
+          color: '#333',
+        }}
+      >
+        Create your first course module
+      </h2>
+
+      <p
+        style={{
+          fontSize: '14px',
+          color: '#666',
+          maxWidth: '300px',
+          lineHeight: '1.5',
+        }}
+      >
+        Get started by creating a module to organize your course content. Use
+        the "Add" button above to begin.
       </p>
     </div>
   );
